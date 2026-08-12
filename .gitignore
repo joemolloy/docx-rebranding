@@ -1,0 +1,24 @@
+# Source documents and generated output
+*.doc
+*.docx
+*.pdf
+*.xlsx
+*.xls
+*.vsdx
+*.jpg
+*.jpeg
+*.png
+*.gif
+output/
+QUAM/
+
+# Generated reports and local caches
+*.csv
+*.log
+__pycache__/
+.DS_Store
+
+# Local editor / OS files
+.venv/
+.idea/
+.vscode/
