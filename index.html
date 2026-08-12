@@ -48,6 +48,7 @@
     label span { display:block; color:var(--muted); font-size:12px; font-weight:750; margin-bottom:6px; }
     input[type=text],input[type=date],input[type=number] { width:100%; padding:10px 11px; border:1px solid var(--line); border-radius:9px; color:var(--ink); background:white; }
     .logo-row { display:flex; align-items:center; gap:11px; padding:10px; border:1px solid var(--line); border-radius:11px; margin-bottom:13px; }
+    .logo-row.over { border-color:var(--brand); background:var(--mint); }
     #logoPreview { width:76px; height:42px; object-fit:contain; background:#f4f4f4; border-radius:6px; }
     .file-meta { min-width:0; flex:1; }
     .file-meta strong,.file-meta small { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
@@ -112,7 +113,7 @@
         <h2><span class="step">2</span> Rebranding-Angaben</h2>
         <div class="logo-row">
           <img id="logoPreview" alt="Logo Vorschau">
-          <div class="file-meta"><strong id="logoName">Kein Logo ausgewählt</strong><small>JPG, PNG oder GIF</small></div>
+          <div class="file-meta"><strong id="logoName">Kein Logo ausgewählt</strong><small>JPG, PNG oder GIF hierher ziehen</small></div>
           <button class="btn secondary" id="chooseLogo">Logo</button>
           <input id="logoInput" type="file" accept="image/jpeg,image/png,image/gif">
         </div>
@@ -157,10 +158,12 @@
     $("#chooseMore").onclick=()=>$("#fileInput").click();
     $("#clearFiles").onclick=()=>{state.files=[];state.reports=[];$("#fileInput").value="";$("#folderInput").value="";$("#progress").value=0;render();};
     $("#fileInput").onchange=e=>addFiles([...e.target.files]); $("#folderInput").onchange=e=>addFiles([...e.target.files]);
-    $("#logoInput").onchange=e=>{state.logo=e.target.files[0]||null; updateLogo(); preflight();};
+    $("#logoInput").onchange=e=>setLogo(e.target.files[0]);
+    const logoRow=$(".logo-row"); ["dragenter","dragover"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();logoRow.classList.add("over")})); ["dragleave","drop"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();logoRow.classList.remove("over")})); logoRow.addEventListener("drop",e=>setLogo([...e.dataTransfer.files].find(file=>/^image\/(jpeg|png|gif)$/.test(file.type))));
     const drop=$("#drop"); ["dragenter","dragover"].forEach(x=>drop.addEventListener(x,e=>{e.preventDefault();drop.classList.add("over")})); ["dragleave","drop"].forEach(x=>drop.addEventListener(x,e=>{e.preventDefault();drop.classList.remove("over")})); drop.addEventListener("drop",async e=>{const entries=[...e.dataTransfer.items].map(x=>x.webkitGetAsEntry?.()).filter(Boolean);if(!entries.length)return addFiles([...e.dataTransfer.files]);const files=[];for(const entry of entries)files.push(...await filesFromEntry(entry,""));addFiles(files);});
     async function filesFromEntry(entry,parent){if(entry.isFile)return [await new Promise((resolve,reject)=>entry.file(f=>{Object.defineProperty(f,"_dropPath",{value:parent+f.name});resolve(f)},reject))];const reader=entry.createReader(),children=[];for(;;){const batch=await new Promise((resolve,reject)=>reader.readEntries(resolve,reject));if(!batch.length)break;children.push(...batch);}const out=[];for(const child of children)out.push(...await filesFromEntry(child,parent+entry.name+"/"));return out;}
     function addFiles(files){const seen=new Set(state.files.map(x=>x.path));for(const file of files){if(!file.name.toLowerCase().endsWith(".docx")||file.name.startsWith("~$"))continue;const path=file.webkitRelativePath||file._dropPath||file.name;if(!seen.has(path)){state.files.push({file,path});seen.add(path);}}preflight();}
+    function setLogo(file){if(!file)return;if(!/^image\/(jpeg|png|gif)$/.test(file.type)){$("#errorBanner").textContent="Bitte ein JPG-, PNG- oder GIF-Logo auswählen.";$("#errorBanner").style.display="block";return;}state.logo=file;updateLogo();preflight();}
     function updateLogo(){if(!state.logo){$("#logoName").textContent="Kein Logo ausgewählt";$("#logoPreview").removeAttribute("src");return;}$("#logoName").textContent=state.logo.name;$("#logoPreview").src=URL.createObjectURL(state.logo);}
     function parse(bytes){const s=typeof bytes==="string"?bytes:fflate.strFromU8(bytes);const d=new DOMParser().parseFromString(s,"application/xml");if(d.querySelector("parsererror"))throw Error("Ungültiges XML");return d;}
     function xml(doc){return fflate.strToU8('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n'+new XMLSerializer().serializeToString(doc.documentElement));}
