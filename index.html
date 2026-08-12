@@ -119,9 +119,9 @@
           <input id="logoInput" type="file" accept="image/jpeg,image/png,image/gif">
         </div>
         <div class="fields">
-          <label><span>Bearbeiter</span><input id="bearbeiter" type="text"></label>
-          <label><span>Freigeber</span><input id="freigeber" type="text"></label>
-          <label><span>Prüfer</span><input id="pruefer" type="text"></label>
+          <label><span>Bearbeiter *</span><input id="bearbeiter" type="text" required></label>
+          <label><span>Freigeber *</span><input id="freigeber" type="text" required></label>
+          <label><span>Prüfer *</span><input id="pruefer" type="text" required></label>
           <label><span>Freigabedatum</span><input id="date" type="date"></label>
           <label><span>Changelog</span><input id="changelog" type="text" value="Anpassung Rebranding"></label>
           <label><span>Logo-Breite (mm)</span><input id="logoWidth" type="number" min="5" max="150" step="0.5" value="47"></label>
@@ -191,7 +191,7 @@
     function statusText(s){return ({ready:"Bereit",skipped:"Prüfen",failed:"Fehler",working:"In Arbeit",patched:"Fertig"})[s]||s;}
     function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
     function tick(){return new Promise(r=>setTimeout(r,0));}
-    function opts(){const d=$("#date").value;if(!d)throw Error("Bitte Freigabedatum angeben");return {bearbeiter:$("#bearbeiter").value,freigeber:$("#freigeber").value,pruefer:$("#pruefer").value,date:d.split("-").reverse().join("."),iso:d+"T00:00:00Z",changelog:$("#changelog").value,width:Math.round(Number($("#logoWidth").value)*36000),logoName:state.logo.name};}
+    function opts(){const d=$("#date").value,required=[["#bearbeiter","Bearbeiter"],["#freigeber","Freigeber"],["#pruefer","Prüfer"]];for(const [selector,label] of required)if(!$(selector).value.trim())throw Error(`Bitte ${label} ausfüllen`);if(!d)throw Error("Bitte Freigabedatum angeben");return {bearbeiter:$("#bearbeiter").value.trim(),freigeber:$("#freigeber").value.trim(),pruefer:$("#pruefer").value.trim(),date:d.split("-").reverse().join("."),iso:d+"T00:00:00Z",changelog:$("#changelog").value,width:Math.round(Number($("#logoWidth").value)*36000),logoName:state.logo.name};}
     async function imageDims(file){const bmp=await createImageBitmap(file);const d=[bmp.width,bmp.height];bmp.close();return d;}
     function setCell(tc,value){const ts=els(tc,NS.w,"t");if(!ts.length){const doc=tc.ownerDocument,p=doc.createElementNS(NS.w,"w:p"),r=doc.createElementNS(NS.w,"w:r"),t=doc.createElementNS(NS.w,"w:t");t.textContent=value;r.append(t);p.append(r);tc.append(p);return;}ts[0].textContent=value;for(const t of ts.slice(1))t.textContent="";}
     function bump(s){const m=(s||"").trim().match(/^(.*?)(\d+)\.(\d+)$/);if(!m)return null;const v=`${Number(m[2])+1}.0`;return {text:m[1]+v,version:v,old:`${m[2]}.${m[3]}`};}
