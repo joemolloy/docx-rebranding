@@ -49,6 +49,7 @@
     input[type=text],input[type=date],input[type=number] { width:100%; padding:10px 11px; border:1px solid var(--line); border-radius:9px; color:var(--ink); background:white; }
     .logo-row { display:flex; align-items:center; gap:11px; padding:10px; border:1px solid var(--line); border-radius:11px; margin-bottom:13px; }
     .logo-row.over { border-color:var(--brand); background:var(--mint); }
+    .logo-row { cursor:copy; }
     #logoPreview { width:76px; height:42px; object-fit:contain; background:#f4f4f4; border-radius:6px; }
     .file-meta { min-width:0; flex:1; }
     .file-meta strong,.file-meta small { display:block; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
@@ -159,11 +160,14 @@
     $("#clearFiles").onclick=()=>{state.files=[];state.reports=[];$("#fileInput").value="";$("#folderInput").value="";$("#progress").value=0;render();};
     $("#fileInput").onchange=e=>addFiles([...e.target.files]); $("#folderInput").onchange=e=>addFiles([...e.target.files]);
     $("#logoInput").onchange=e=>setLogo(e.target.files[0]);
-    const logoRow=$(".logo-row"); ["dragenter","dragover"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();e.stopPropagation();if(e.dataTransfer)e.dataTransfer.dropEffect="copy";logoRow.classList.add("over")})); ["dragleave","drop"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();e.stopPropagation();logoRow.classList.remove("over")})); logoRow.addEventListener("drop",e=>setLogo([...e.dataTransfer.files].find(isLogo)));
+    const logoRow=$(".logo-row"); ["dragenter","dragover"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();e.stopPropagation();if(e.dataTransfer)e.dataTransfer.dropEffect="copy";logoRow.classList.add("over")})); ["dragleave","drop"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();e.stopPropagation();logoRow.classList.remove("over")})); logoRow.addEventListener("drop",e=>{const files=droppedFiles(e.dataTransfer);setLogo(files.find(isLogo));});
+    document.addEventListener("dragover",e=>{if([...e.dataTransfer?.types||[]].includes("Files"))e.preventDefault()});
+    document.addEventListener("drop",e=>{if(e.target.closest(".logo-row")||e.target.closest("#drop"))return;if([...e.dataTransfer?.types||[]].includes("Files"))e.preventDefault()});
     const drop=$("#drop"); ["dragenter","dragover"].forEach(x=>drop.addEventListener(x,e=>{e.preventDefault();drop.classList.add("over")})); ["dragleave","drop"].forEach(x=>drop.addEventListener(x,e=>{e.preventDefault();drop.classList.remove("over")})); drop.addEventListener("drop",async e=>{const entries=[...e.dataTransfer.items].map(x=>x.webkitGetAsEntry?.()).filter(Boolean);if(!entries.length)return addFiles([...e.dataTransfer.files]);const files=[];for(const entry of entries)files.push(...await filesFromEntry(entry,""));addFiles(files);});
     async function filesFromEntry(entry,parent){if(entry.isFile)return [await new Promise((resolve,reject)=>entry.file(f=>{Object.defineProperty(f,"_dropPath",{value:parent+f.name});resolve(f)},reject))];const reader=entry.createReader(),children=[];for(;;){const batch=await new Promise((resolve,reject)=>reader.readEntries(resolve,reject));if(!batch.length)break;children.push(...batch);}const out=[];for(const child of children)out.push(...await filesFromEntry(child,parent+entry.name+"/"));return out;}
     function addFiles(files){const seen=new Set(state.files.map(x=>x.path));for(const file of files){if(!file.name.toLowerCase().endsWith(".docx")||file.name.startsWith("~$"))continue;const path=file.webkitRelativePath||file._dropPath||file.name;if(!seen.has(path)){state.files.push({file,path});seen.add(path);}}preflight();}
     function isLogo(file){return /^image\/(jpeg|png|gif)$/.test(file.type)||/\.(jpe?g|png|gif)$/i.test(file.name||"");}
+    function droppedFiles(dataTransfer){const files=[...(dataTransfer?.files||[])];if(files.length)return files;return [...(dataTransfer?.items||[])].map(item=>item.kind==="file"?item.getAsFile():null).filter(Boolean);}
     function setLogo(file){if(!file)return;if(!isLogo(file)){$("#errorBanner").textContent="Bitte ein JPG-, PNG- oder GIF-Logo auswählen.";$("#errorBanner").style.display="block";return;}$("#errorBanner").style.display="none";state.logo=file;updateLogo();preflight();}
     function updateLogo(){if(!state.logo){$("#logoName").textContent="Kein Logo ausgewählt";$("#logoPreview").removeAttribute("src");return;}$("#logoName").textContent=state.logo.name;$("#logoPreview").src=URL.createObjectURL(state.logo);}
     function parse(bytes){const s=typeof bytes==="string"?bytes:fflate.strFromU8(bytes);const d=new DOMParser().parseFromString(s,"application/xml");if(d.querySelector("parsererror"))throw Error("Ungültiges XML");return d;}
