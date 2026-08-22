@@ -78,9 +78,10 @@
     .check { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:650; cursor:pointer; }
     .check input { width:16px; height:16px; accent-color:var(--brand); cursor:pointer; }
     .fields .wide { grid-column:1/-1; }
-    [data-step].off { opacity:.42; }
-    [data-step].off input { pointer-events:none; background:#f4f6f5; }
-    .logo-row.off { opacity:.42; }
+    .group { margin-bottom:13px; }
+    .group:last-child { margin-bottom:0; }
+    .group[hidden] { display:none; }
+    .group .logo-row { margin-bottom:12px; }
     @media(max-width:760px){ .shell { padding:24px 14px 48px; } main { grid-template-columns:1fr; } .results { grid-column:1; } .fields { grid-template-columns:1fr; } .local-badge { display:none; } .results-head { align-items:flex-start; flex-direction:column; } .selection { flex-wrap:wrap; } .selection .actions { width:100%; justify-content:flex-start; } }
   </style>
 </head>
@@ -125,22 +126,36 @@
           <label class="check"><input type="checkbox" id="stepChangelog" checked><span>Changelog-Zeile</span></label>
           <label class="check"><input type="checkbox" id="stepCompany"><span>Firmenname ersetzen</span></label>
         </div>
-        <div class="logo-row" data-step="logo">
-          <img id="logoPreview" alt="Logo Vorschau">
-          <div class="file-meta"><strong id="logoName">Kein Logo ausgewählt</strong><small>JPG, PNG oder GIF hierher ziehen</small></div>
-          <button class="btn secondary" id="chooseLogo">Logo</button>
-          <input id="logoInput" type="file" accept="image/jpeg,image/png,image/gif">
+        <div class="group" data-group="logo">
+          <div class="logo-row">
+            <img id="logoPreview" alt="Logo Vorschau">
+            <div class="file-meta"><strong id="logoName">Kein Logo ausgewählt</strong><small>JPG, PNG oder GIF hierher ziehen</small></div>
+            <button class="btn secondary" id="chooseLogo">Logo</button>
+            <input id="logoInput" type="file" accept="image/jpeg,image/png,image/gif">
+          </div>
+          <div class="fields">
+            <label><span>Logo-Breite (mm)</span><input id="logoWidth" type="number" min="5" max="150" step="0.5" value="47"></label>
+          </div>
         </div>
-        <div class="fields">
-          <label data-step="meta"><span>Bearbeiter *</span><input id="bearbeiter" type="text"></label>
-          <label data-step="meta"><span>Freigeber *</span><input id="freigeber" type="text"></label>
-          <label data-step="meta"><span>Prüfer *</span><input id="pruefer" type="text"></label>
-          <label data-step="meta"><span>Freigabedatum</span><input id="date" type="date"></label>
-          <label data-step="changelog"><span>Changelog-Text</span><input id="changelog" type="text" value="Anpassung Rebranding"></label>
-          <label data-step="logo"><span>Logo-Breite (mm)</span><input id="logoWidth" type="number" min="5" max="150" step="0.5" value="47"></label>
-          <label data-step="company"><span>Firma (alt)</span><input id="companyFrom" type="text" placeholder="Altmarke"></label>
-          <label data-step="company"><span>Firma (neu)</span><input id="companyTo" type="text" placeholder="Neumarke"></label>
-          <label class="check wide" data-step="company"><input type="checkbox" id="companyTracked"><span>Als Änderung markieren (Track Changes)</span></label>
+        <div class="group" data-group="meta">
+          <div class="fields">
+            <label><span>Bearbeiter *</span><input id="bearbeiter" type="text"></label>
+            <label><span>Freigeber *</span><input id="freigeber" type="text"></label>
+            <label><span>Prüfer *</span><input id="pruefer" type="text"></label>
+            <label><span>Freigabedatum</span><input id="date" type="date"></label>
+          </div>
+        </div>
+        <div class="group" data-group="changelog">
+          <div class="fields">
+            <label class="wide"><span>Changelog-Text</span><input id="changelog" type="text" value="Anpassung Rebranding"></label>
+          </div>
+        </div>
+        <div class="group" data-group="company">
+          <div class="fields">
+            <label><span>Firma (alt)</span><input id="companyFrom" type="text" placeholder="Altmarke"></label>
+            <label><span>Firma (neu)</span><input id="companyTo" type="text" placeholder="Neumarke"></label>
+            <label class="check wide"><input type="checkbox" id="companyTracked"><span>Als Änderung markieren (Track Changes)</span></label>
+          </div>
         </div>
       </section>
 
@@ -230,7 +245,7 @@
     $("#fileInput").onchange=e=>addFiles([...e.target.files]); $("#folderInput").onchange=e=>addFiles([...e.target.files]);
     $("#logoInput").onchange=e=>setLogo(e.target.files[0]);
     function steps(){return {logo:$("#stepLogo").checked,meta:$("#stepMeta").checked,changelog:$("#stepChangelog").checked,company:$("#stepCompany").checked};}
-    function syncStepUI(){const s=steps();for(const el of document.querySelectorAll("[data-step]")){const on=!!s[el.getAttribute("data-step")];el.classList.toggle("off",!on);for(const inp of el.querySelectorAll("input"))inp.disabled=!on;}}
+    function syncStepUI(){const s=steps();for(const g of document.querySelectorAll(".group"))g.hidden=!s[g.getAttribute("data-group")];}
     for(const id of ["stepLogo","stepMeta","stepChangelog","stepCompany"])$("#"+id).addEventListener("change",()=>{syncStepUI();preflight();});
     syncStepUI();
     const logoRow=$(".logo-row"); ["dragenter","dragover"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();e.stopPropagation();if(e.dataTransfer)e.dataTransfer.dropEffect="copy";logoRow.classList.add("over")})); ["dragleave","drop"].forEach(x=>logoRow.addEventListener(x,e=>{e.preventDefault();e.stopPropagation();logoRow.classList.remove("over")})); logoRow.addEventListener("drop",e=>{const files=droppedFiles(e.dataTransfer);setLogo(files.find(isLogo));});
