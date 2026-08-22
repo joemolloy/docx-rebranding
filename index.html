@@ -30,13 +30,14 @@
     .drop strong { display:block; font-size:19px; }
     .drop small { display:block; color:var(--muted); margin:7px 0 16px; }
     .actions { display:flex; justify-content:center; flex-wrap:wrap; gap:9px; }
-    .selection { display:none; align-items:center; gap:15px; width:100%; }
+    .selection { display:none; align-items:center; gap:15px; width:100%; flex-wrap:wrap; }
     .has-files .selection { display:flex; }
     .has-files .drop-prompt { display:none; }
     .selection-icon { flex:none; display:grid; place-items:center; width:46px; height:54px; border-radius:9px; background:var(--mint); color:var(--brand); font-size:12px; font-weight:900; }
-    .selection-copy { min-width:0; flex:1; }
+    .selection-copy { min-width:140px; flex:1 1 160px; }
     .selection-copy strong,.selection-copy small { display:block; }
-    .selection-copy strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:16px; }
+    .selection-copy strong { font-size:16px; }
+    .selection-copy strong.truncate { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .selection-copy small { margin-top:5px; color:var(--muted); }
     .selection .actions { flex:none; }
     .btn { border:0; border-radius:10px; padding:10px 15px; font-weight:750; background:var(--brand); color:white; }
@@ -260,7 +261,7 @@
     function updateLogo(){if(!state.logo){$("#logoName").textContent="Kein Logo ausgewählt";$("#logoPreview").removeAttribute("src");return;}$("#logoName").textContent=state.logo.name;$("#logoPreview").src=URL.createObjectURL(state.logo);}
     async function unzip(file){return fflate.unzipSync(new Uint8Array(await file.arrayBuffer()));}
     async function preflight(){const s=steps();state.reports=[];render();for(const item of state.files){try{const parts=await unzip(item.file),rep=inspect(parts,s);state.reports.push({...item,...rep,status:rep.ok?"ready":"skipped"});}catch(e){state.reports.push({...item,ok:false,status:"failed",reason:e.message});}render();await tick();}}
-    function render(){const rs=state.reports,fs=state.files;drop.classList.toggle("has-files",fs.length>0);if(fs.length){$("#selectionTitle").textContent=fs.length===1?fs[0].file.name:`${fs.length} Dokumente ausgewählt`;$("#selectionMeta").textContent=fs.length===1?"Dokument wurde hinzugefügt":`${fs[0].file.name}${fs.length>1?` und ${fs.length-1} weitere`:""}`;}$("#countAll").textContent=fs.length;$("#countReady").textContent=rs.filter(x=>x.ok).length;$("#countSkipped").textContent=rs.filter(x=>!x.ok).length;$("#rows").innerHTML=rs.length?rs.map(r=>`<tr><td title="${esc(r.path)}">${esc(r.path)}</td><td class="status ${r.status}">${statusText(r.status)}</td><td>${esc(r.reason||"")}</td></tr>`).join(""):'<tr><td colspan="3" style="color:var(--muted)">Noch keine Dokumente ausgewählt.</td></tr>';const s=steps(),anyStep=s.logo||s.meta||s.changelog||s.company;$("#run").disabled=state.busy||!rs.some(x=>x.ok)||!anyStep||(s.logo&&!state.logo);}
+    function render(){const rs=state.reports,fs=state.files;drop.classList.toggle("has-files",fs.length>0);if(fs.length){$("#selectionTitle").textContent=fs.length===1?fs[0].file.name:`${fs.length} Dokumente ausgewählt`;$("#selectionTitle").classList.toggle("truncate",fs.length===1);$("#selectionMeta").textContent=fs.length===1?"Dokument wurde hinzugefügt":`${fs[0].file.name}${fs.length>1?` und ${fs.length-1} weitere`:""}`;}$("#countAll").textContent=fs.length;$("#countReady").textContent=rs.filter(x=>x.ok).length;$("#countSkipped").textContent=rs.filter(x=>!x.ok).length;$("#rows").innerHTML=rs.length?rs.map(r=>`<tr><td title="${esc(r.path)}">${esc(r.path)}</td><td class="status ${r.status}">${statusText(r.status)}</td><td>${esc(r.reason||"")}</td></tr>`).join(""):'<tr><td colspan="3" style="color:var(--muted)">Noch keine Dokumente ausgewählt.</td></tr>';const s=steps(),anyStep=s.logo||s.meta||s.changelog||s.company;$("#run").disabled=state.busy||!rs.some(x=>x.ok)||!anyStep||(s.logo&&!state.logo);}
     function statusText(s){return ({ready:"Bereit",skipped:"Prüfen",failed:"Fehler",working:"In Arbeit",patched:"Fertig"})[s]||s;}
     function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
     function tick(){return new Promise(r=>setTimeout(r,0));}
