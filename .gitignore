@@ -23,3 +23,7 @@ __pycache__/
 .idea/
 .vscode/
 .git-public/
+
+# Vendored test-only deps (cloned from GitHub by hand) and generated fixtures
+vendor/
+test/fixtures/
