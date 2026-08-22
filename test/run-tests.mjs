@@ -45,18 +45,18 @@ const assertAllPartsParse = (parts) => {
 // Company replacement — plain mode
 // ---------------------------------------------------------------------------
 test("plain: single-run, case-insensitive, exact target casing", () => {
-  const parts = makeParts({ doc: para(run("Willkommen bei Vamed und VAMED heute")) });
+  const parts = makeParts({ doc: para(run("Willkommen bei Altmarke und ALTMARKE heute")) });
   const res = core.replaceCompany(parts, companyOpts());
   assert.equal(res.count, 2);
   assert.equal(res.fallbacks.length, 0);
-  assert.equal(visible(docStr(parts)), "Willkommen bei VITREA und VITREA heute");
+  assert.equal(visible(docStr(parts)), "Willkommen bei Neumarke und Neumarke heute");
 });
 
 test("plain: cross-run match collapses into one run", () => {
-  const parts = makeParts({ doc: para(run("Va"), run("med rocks", BOLD)) });
+  const parts = makeParts({ doc: para(run("Alt"), run("marke rocks", BOLD)) });
   const res = core.replaceCompany(parts, companyOpts());
   assert.equal(res.count, 1);
-  assert.equal(visible(docStr(parts)), "VITREA rocks");
+  assert.equal(visible(docStr(parts)), "Neumarke rocks");
 });
 
 test("plain: regex-special 'from' is escaped, no accidental matches", () => {
@@ -70,7 +70,7 @@ test("plain: regex-special 'from' is escaped, no accidental matches", () => {
 // Company replacement — tracked-changes mode
 // ---------------------------------------------------------------------------
 test("tracked: single-run emits well-formed ins/del, formatting preserved", () => {
-  const parts = makeParts({ doc: para(run("Hallo Vamed Welt", BOLD)) });
+  const parts = makeParts({ doc: para(run("Hallo Altmarke Welt", BOLD)) });
   const res = core.replaceCompany(parts, companyOpts({ companyTracked: true }));
   assert.equal(res.count, 1);
   assert.equal(res.fallbacks.length, 0);
@@ -78,8 +78,8 @@ test("tracked: single-run emits well-formed ins/del, formatting preserved", () =
   const d = core.parse(s);
   const del = core.els(d, NS.w, "del")[0], ins = core.els(d, NS.w, "ins")[0];
   assert.ok(del && ins, "has both del and ins");
-  assert.equal(core.els(del, NS.w, "delText")[0].textContent, "Vamed");
-  assert.equal(core.els(ins, NS.w, "t")[0].textContent, "VITREA");
+  assert.equal(core.els(del, NS.w, "delText")[0].textContent, "Altmarke");
+  assert.equal(core.els(ins, NS.w, "t")[0].textContent, "Neumarke");
   for (const el of [del, ins]) {
     assert.equal(core.attr(el, NS.w, "author"), "Chef");
     assert.equal(core.attr(el, NS.w, "date"), "2026-08-22T00:00:00Z");
@@ -87,43 +87,43 @@ test("tracked: single-run emits well-formed ins/del, formatting preserved", () =
   }
   // bold rPr carried onto the inserted run
   assert.ok(core.els(ins, NS.w, "b").length === 1, "inserted run keeps bold");
-  assert.equal(accepted(s), "Hallo VITREA Welt");
-  assert.equal(rejected(s), "Hallo Vamed Welt");
+  assert.equal(accepted(s), "Hallo Neumarke Welt");
+  assert.equal(rejected(s), "Hallo Altmarke Welt");
 });
 
 test("tracked: multiple single-run matches get unique revision ids", () => {
-  const parts = makeParts({ doc: para(run("Vamed and Vamed done")) });
+  const parts = makeParts({ doc: para(run("Altmarke and Altmarke done")) });
   const res = core.replaceCompany(parts, companyOpts({ companyTracked: true }));
   assert.equal(res.count, 2);
   const d = core.parse(docStr(parts));
   const ids = [...core.els(d, NS.w, "del"), ...core.els(d, NS.w, "ins")].map((e) => core.attr(e, NS.w, "id"));
   assert.equal(new Set(ids).size, ids.length, "all revision ids unique");
-  assert.equal(accepted(docStr(parts)), "VITREA and VITREA done");
+  assert.equal(accepted(docStr(parts)), "Neumarke and Neumarke done");
 });
 
 test("tracked: cross-run match falls back to plain replace and is logged", () => {
-  const parts = makeParts({ doc: para(run("Contact Va"), run("med now")) });
+  const parts = makeParts({ doc: para(run("Contact Alt"), run("marke now")) });
   const res = core.replaceCompany(parts, companyOpts({ companyTracked: true }));
   assert.equal(res.count, 1);
   assert.equal(res.fallbacks.length, 1);
   assert.equal(res.fallbacks[0].part, "document.xml");
-  assert.match(res.fallbacks[0].snippet, /Vamed/i);
+  assert.match(res.fallbacks[0].snippet, /Altmarke/i);
   const d = core.parse(docStr(parts));
   assert.equal(core.els(d, NS.w, "ins").length, 0, "no tracked ins for cross-run");
   assert.equal(core.els(d, NS.w, "del").length, 0, "no tracked del for cross-run");
-  assert.equal(visible(docStr(parts)), "Contact VITREA now");
+  assert.equal(visible(docStr(parts)), "Contact Neumarke now");
 });
 
 // ---------------------------------------------------------------------------
 // Scope + no-op
 // ---------------------------------------------------------------------------
 test("scope: replaces across document, header and footer", () => {
-  const parts = makeParts({ doc: para(run("Vamed A")), header: para(run("Vamed H")), footer: para(run("Vamed F")) });
+  const parts = makeParts({ doc: para(run("Altmarke A")), header: para(run("Altmarke H")), footer: para(run("Altmarke F")) });
   const res = core.replaceCompany(parts, companyOpts());
   assert.equal(res.count, 3);
-  assert.equal(visible(docStr(parts)), "VITREA A");
-  assert.equal(visible(dec(parts["word/header1.xml"])), "VITREA H");
-  assert.equal(visible(dec(parts["word/footer1.xml"])), "VITREA F");
+  assert.equal(visible(docStr(parts)), "Neumarke A");
+  assert.equal(visible(dec(parts["word/header1.xml"])), "Neumarke H");
+  assert.equal(visible(dec(parts["word/footer1.xml"])), "Neumarke F");
   assertAllPartsParse(parts);
 });
 
@@ -143,11 +143,13 @@ const haveReal = existsSync(REAL);
 const loadReal = () => unzipSync(new Uint8Array(readFileSync(REAL)));
 const LOGO = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 const DIMS = [100, 40];
+// companyFrom is a plain word that actually occurs in the sample document, so
+// the company step has something to replace; it is not a real company name.
 const fullOpts = (steps, extra = {}) => Object.assign({
   steps, bearbeiter: "ZZTESTEDITOR", freigeber: "Max Chef", pruefer: "Eva Prüf",
   date: "22.08.2026", iso: "2026-08-22T00:00:00Z", changelog: "Anpassung Rebranding",
   width: 47 * 36000, logoName: "logo.png",
-  companyFrom: "Vamed", companyTo: "VITREA", companyTracked: true, author: "ZZTESTEDITOR",
+  companyFrom: "Formular", companyTo: "Neumarke", companyTracked: true, author: "ZZTESTEDITOR",
 }, extra);
 
 test("real: all steps together — verify passes, everything applied", { skip: !haveReal }, () => {
@@ -158,7 +160,7 @@ test("real: all steps together — verify passes, everything applied", { skip: !
   const res = core.patch(parts, insp, LOGO, DIMS, fullOpts(steps)); // verify() throws on any failure
   const out = unzipSync(res.bytes);
   assert.ok(res.company.count >= 1, "company replaced at least once");
-  assert.match(docStr(out), /VITREA/);
+  assert.match(docStr(out), /Neumarke/);
   assert.match(docStr(out), /Anpassung Rebranding/);
   assert.ok(docStr(out).includes("ZZTESTEDITOR") || dec(out["word/header1.xml"]).includes("ZZTESTEDITOR"), "editor written");
   assertAllPartsParse(out);

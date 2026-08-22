@@ -37,7 +37,7 @@ export function makeParts({ doc = "", header = null, footer = null } = {}) {
 export function companyOpts(overrides = {}) {
   return Object.assign({
     steps: { logo: false, meta: false, changelog: false, company: true },
-    companyFrom: "Vamed", companyTo: "VITREA", companyTracked: false,
+    companyFrom: "Altmarke", companyTo: "Neumarke", companyTracked: false,
     author: "Chef", iso: "2026-08-22T00:00:00Z", date: "22.08.2026",
     bearbeiter: "", freigeber: "", pruefer: "", changelog: "", width: 0, logoName: "",
   }, overrides);
