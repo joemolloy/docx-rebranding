@@ -35,21 +35,18 @@ node build.mjs        # inlines the core into index.html + rebrand-prototype.htm
 ### Tests
 
 The same `rebrand-core.mjs` runs headlessly under Node (via `test/setup.mjs`,
-which supplies `xmldom` for the DOM and a `node:zlib` ZIP shim for `fflate`):
+which supplies `@xmldom/xmldom` for the DOM and a small `node:zlib` ZIP shim,
+`test/zip-shim.mjs`, in place of `fflate`):
 
 ```sh
-node --test test/run-tests.mjs
+pnpm install
+pnpm test
 ```
 
-One-time setup for the tests clones two dev-only dependencies from GitHub into
-`vendor/` (both git-ignored):
-
-```sh
-git -c init.templateDir= clone --depth 1 https://github.com/xmldom/xmldom vendor/xmldom
-```
-
-The real-document tests read from `input/` and are skipped automatically when
-that tree is absent.
+`@xmldom/xmldom` is the only dependency; ZIP handling in Node reuses the
+built-in `node:zlib` (the browser keeps using `fflate` from the CDN). The
+real-document tests read from `input/` and are skipped automatically when that
+tree is absent.
 
 ## Python tools
 
