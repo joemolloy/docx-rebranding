@@ -7,11 +7,49 @@ are not uploaded.
 ## Browser tool
 
 Open `rebrand-prototype.html` directly, or serve this folder with any static
-file server. Select a logo and one or more `.docx` files, review the preflight
+file server. Choose which steps run (logo swap, responsibility/date/version
+metadata, changelog row, company-name replacement), fill the relevant fields,
+select `.docx` files (and a logo if the logo step is on), review the preflight
 results, then download a patched document or batch ZIP.
+
+Company-name replacement (e.g. `Vamed` → `VITREA`) is case-insensitive and
+applies to the document body, headers and footers. Enable **Als Änderung
+markieren** to record each swap as a tracked Word revision; matches that span a
+run boundary fall back to a plain replacement and are listed in the results and
+the `rebrand_report.csv` fallback log.
 
 The page currently loads the small `fflate` ZIP library from jsDelivr. Vendor
 that dependency locally if the published GitHub Pages site must work offline.
+
+### Editing the browser tool
+
+The document logic lives in **`rebrand-core.mjs`** (the single source of truth).
+`index.html` embeds it between `/*CORE_START*/` … `/*CORE_END*/` markers; the UI
+glue lives directly in `index.html` outside those markers. After editing
+`rebrand-core.mjs`, regenerate the pages:
+
+```sh
+node build.mjs        # inlines the core into index.html + rebrand-prototype.html
+```
+
+### Tests
+
+The same `rebrand-core.mjs` runs headlessly under Node (via `test/setup.mjs`,
+which supplies `xmldom` for the DOM and a `node:zlib` ZIP shim for `fflate`):
+
+```sh
+node --test test/run-tests.mjs
+```
+
+One-time setup for the tests clones two dev-only dependencies from GitHub into
+`vendor/` (both git-ignored):
+
+```sh
+git -c init.templateDir= clone --depth 1 https://github.com/xmldom/xmldom vendor/xmldom
+```
+
+The real-document tests read from `input/` and are skipped automatically when
+that tree is absent.
 
 ## Python tools
 
