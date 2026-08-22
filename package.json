@@ -1,0 +1,14 @@
+{
+  "name": "docx-rebranding",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser-based DOCX rebranding tool and its Node test harness",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/run-tests.mjs"
+  },
+  "devDependencies": {
+    "@xmldom/xmldom": "^0.9.12"
+  }
+}
