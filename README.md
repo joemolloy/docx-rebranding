@@ -12,7 +12,7 @@ metadata, changelog row, company-name replacement), fill the relevant fields,
 select `.docx` files (and a logo if the logo step is on), review the preflight
 results, then download a patched document or batch ZIP.
 
-Company-name replacement (e.g. `Altmarke` → `Neumarke`) is case-insensitive and
+Company-name replacement (e.g. `Alte AG` → `Neue AG`) is case-insensitive and
 applies to the document body, headers and footers. Enable **Als Änderung
 markieren** to record each swap as a tracked Word revision; matches that span a
 run boundary fall back to a plain replacement and are listed in the results and
