@@ -1,7 +1,7 @@
 // Test harness bootstrap: wire the browser globals the core relies on to Node
 // equivalents (xmldom for DOM, a node:zlib shim for fflate), then re-export the
 // real rebrand-core.mjs so tests exercise the exact shipped logic.
-import { DOMParser, XMLSerializer } from "../vendor/xmldom/lib/index.js";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import fflate from "./zip-shim.mjs";
 
 globalThis.DOMParser = DOMParser;
