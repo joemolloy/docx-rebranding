@@ -6,8 +6,8 @@ are not uploaded.
 
 ## Browser tool
 
-Open `rebrand-prototype.html` directly, or serve this folder with any static
-file server. Choose which steps run (logo swap, responsibility/date/version
+Open `index.html` directly, or serve this folder with any static file server.
+Choose which steps run (logo swap, responsibility/date/version
 metadata, changelog row, company-name replacement), fill the relevant fields,
 select `.docx` files (and a logo if the logo step is on), review the preflight
 results, then download a patched document or batch ZIP.
@@ -26,10 +26,10 @@ that dependency locally if the published GitHub Pages site must work offline.
 The document logic lives in **`rebrand-core.mjs`** (the single source of truth).
 `index.html` embeds it between `/*CORE_START*/` … `/*CORE_END*/` markers; the UI
 glue lives directly in `index.html` outside those markers. After editing
-`rebrand-core.mjs`, regenerate the pages:
+`rebrand-core.mjs`, regenerate the page:
 
 ```sh
-node build.mjs        # inlines the core into index.html + rebrand-prototype.html
+node build.mjs        # inlines the core into index.html
 ```
 
 ### Tests
