@@ -53,7 +53,7 @@ test("plain: single-run, case-insensitive, exact target casing", () => {
 });
 
 test("plain: cross-run match collapses into one run", () => {
-  const parts = makeParts({ doc: para(run("Va"), run("med rocks", BOLD)) });
+  const parts = makeParts({ doc: para(run("Alt"), run("marke rocks", BOLD)) });
   const res = core.replaceCompany(parts, companyOpts());
   assert.equal(res.count, 1);
   assert.equal(visible(docStr(parts)), "Neumarke rocks");
@@ -102,7 +102,7 @@ test("tracked: multiple single-run matches get unique revision ids", () => {
 });
 
 test("tracked: cross-run match falls back to plain replace and is logged", () => {
-  const parts = makeParts({ doc: para(run("Contact Va"), run("med now")) });
+  const parts = makeParts({ doc: para(run("Contact Alt"), run("marke now")) });
   const res = core.replaceCompany(parts, companyOpts({ companyTracked: true }));
   assert.equal(res.count, 1);
   assert.equal(res.fallbacks.length, 1);
@@ -143,11 +143,13 @@ const haveReal = existsSync(REAL);
 const loadReal = () => unzipSync(new Uint8Array(readFileSync(REAL)));
 const LOGO = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
 const DIMS = [100, 40];
+// companyFrom is a plain word that actually occurs in the sample document, so
+// the company step has something to replace; it is not a real company name.
 const fullOpts = (steps, extra = {}) => Object.assign({
   steps, bearbeiter: "ZZTESTEDITOR", freigeber: "Max Chef", pruefer: "Eva Prüf",
   date: "22.08.2026", iso: "2026-08-22T00:00:00Z", changelog: "Anpassung Rebranding",
   width: 47 * 36000, logoName: "logo.png",
-  companyFrom: "Altmarke", companyTo: "Neumarke", companyTracked: true, author: "ZZTESTEDITOR",
+  companyFrom: "Formular", companyTo: "Neumarke", companyTracked: true, author: "ZZTESTEDITOR",
 }, extra);
 
 test("real: all steps together — verify passes, everything applied", { skip: !haveReal }, () => {
