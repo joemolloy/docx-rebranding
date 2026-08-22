@@ -1,6 +1,6 @@
 // Build step: inline rebrand-core.mjs (the source of truth for document logic)
 // into index.html between the CORE markers, stripping ES `export` keywords so it
-// runs inside the page's IIFE, then mirror the result to rebrand-prototype.html.
+// runs inside the page's IIFE.
 // Run after editing rebrand-core.mjs:  node build.mjs
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -30,5 +30,4 @@ const after = html.slice(e + END.length);
 const out = before + inlined + after;
 
 writeFileSync(htmlPath, out);
-writeFileSync(join(DIR, "rebrand-prototype.html"), out);
-console.log("build: index.html + rebrand-prototype.html regenerated from rebrand-core.mjs");
+console.log("build: index.html regenerated from rebrand-core.mjs");
